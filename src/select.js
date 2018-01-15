@@ -1,4 +1,4 @@
-ngFileUpload.directive('ngfSelect', ['$parse', '$timeout', '$compile', 'Upload', function ($parse, $timeout, $compile, Upload) {
+ngFileUpload.directive('ngfSelect', ['$parse', '$timeout', '$compile', 'Upload', 'FILE_EXTENSIONS', function ($parse, $timeout, $compile, Upload, FILE_EXTENSIONS) {
   var generatedElems = [];
 
   function isDelayedClickSupported(ua) {
@@ -13,7 +13,7 @@ ngFileUpload.directive('ngfSelect', ['$parse', '$timeout', '$compile', 'Upload',
     return ua.indexOf('Chrome') === -1 && /.*Windows.*Safari.*/.test(ua);
   }
 
-  function linkFileSelect(scope, elem, attr, ngModel, $parse, $timeout, $compile, upload) {
+  function linkFileSelect(scope, elem, attr, ngModel, $parse, $timeout, $compile, upload, FILE_EXTENSIONS) {
     /** @namespace attr.ngfSelect */
     /** @namespace attr.ngfChange */
     /** @namespace attr.ngModel */
@@ -48,6 +48,7 @@ ngFileUpload.directive('ngfSelect', ['$parse', '$timeout', '$compile', 'Upload',
     }
 
     upload.registerModelChangeValidator(ngModel, attr, scope);
+    var fileElem = elem;
 
     var unwatches = [];
     if (attrGetter('ngfMultiple')) {
@@ -64,6 +65,11 @@ ngFileUpload.directive('ngfSelect', ['$parse', '$timeout', '$compile', 'Upload',
       unwatches.push(scope.$watch(attrGetter('ngfAccept'), function () {
         fileElem.attr('accept', attrGetter('ngfAccept', scope));
       }));
+    }
+    if (attr.ngfImage && FILE_EXTENSIONS) {
+      fileElem.attr('accept', FILE_EXTENSIONS.image);
+    } else if (FILE_EXTENSIONS) {
+      fileElem.attr('accept', FILE_EXTENSIONS.all);
     }
     unwatches.push(attr.$observe('accept', function () {
       fileElem.attr('accept', attrGetter('accept'));
@@ -167,7 +173,6 @@ ngFileUpload.directive('ngfSelect', ['$parse', '$timeout', '$compile', 'Upload',
       }
     }
 
-    var fileElem = elem;
 
     function resetModel(evt) {
       if (upload.shouldUpdateOn('click', attr, scope) && fileElem.val()) {
@@ -248,7 +253,7 @@ ngFileUpload.directive('ngfSelect', ['$parse', '$timeout', '$compile', 'Upload',
     restrict: 'AEC',
     require: '?ngModel',
     link: function (scope, elem, attr, ngModel) {
-      linkFileSelect(scope, elem, attr, ngModel, $parse, $timeout, $compile, Upload);
+      linkFileSelect(scope, elem, attr, ngModel, $parse, $timeout, $compile, Upload, FILE_EXTENSIONS);
     }
   };
 }]);
